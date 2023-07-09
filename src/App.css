@@ -1,0 +1,27 @@
+html, body  {
+  margin: 0;
+  height: 100%;
+}
+
+#root{
+  height: 100%;
+}
+
+.wrapper{
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  margin: auto;
+  grid-template-columns: repeat(10, 1fr);
+  width: fit-content;
+}
+
+.cell {
+  border: 1px solid black;
+  height: 50px;
+  width: 50px;
+}

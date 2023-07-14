@@ -11,7 +11,7 @@ export const Cell = ({position, hasBomb, number, handleCellClickCallback, isClea
     const handleCellClick = () => {
         handleCellClickCallback(position, hasBomb)
     }
-    // console.log(isCleared)
+    
     return <div className="cell" style={{background: hasBomb ? 'red' : isCleared ? 'blue' : 'white'}} onClick={handleCellClick}>{hasBomb ? 'x' : number    } 
     <div>
         {JSON.stringify(position)}

@@ -3,13 +3,14 @@ import { Cell } from "./Cell";
 import { arraysEqual, getRandomInt, hasArray } from "./utils/numberUtils";
 
 type Props = {
-  size: number;
+  sizeX: number;
+  sizeY: number;
   bombCount: number;
 };
 
 type Position = [number, number];
 
-export const Grid = ({ size, bombCount }: Props) => {
+export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   const [cleared, setCleared] = useState<Array<Position>>([]);
   const [start, setStart] = useState<{
     initialized: boolean;
@@ -21,27 +22,27 @@ export const Grid = ({ size, bombCount }: Props) => {
     const { initialized, firstPos } = start;
     if (!initialized || !firstPos) return arr;
     for (let i = 0; i < bombCount; ++i) {
-      let newBombPos = getRandomInt(0, size ** 2);
+      let newBombPos = getRandomInt(0, sizeX * sizeY);
       while (
-        newBombPos === firstPos[0]*size + firstPos[1] ||
+        newBombPos === firstPos[1] * sizeX + firstPos[0] ||
         arr.includes(newBombPos)
       ) {
-        newBombPos = getRandomInt(0, size ** 2);
+        newBombPos = getRandomInt(0, sizeX * sizeY);
       }
       arr.push(newBombPos);
     }
     return arr;
-  }, [size, bombCount, start]);
+  }, [bombCount, start]);
 
   useEffect(() => {
     start.firstPos && propagateClick(start.firstPos, false);
   }, [bombPos]);
 
-  const playground: Array<{position: Position, hasBomb: boolean}>  = [];
+  const playground: Array<{ position: Position; hasBomb: boolean }> = [];
 
   let index = 0;
-  for (let i = 0; i < size; ++i) {
-    for (let j = 0; j < size; j++) {
+  for (let i = 0; i < sizeY; ++i) {
+    for (let j = 0; j < sizeX; j++) {
       const hasBomb = bombPos.includes(index);
       playground.push({ position: [j, i], hasBomb });
       index++;
@@ -55,7 +56,7 @@ export const Grid = ({ size, bombCount }: Props) => {
 
   const isValidCoordinate = (position: [number, number]) => {
     const [x, y] = position;
-    return x >= 0 && x < size && y >= 0 && y < size;
+    return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
   };
 
   const getNeighbourCells = (position: [number, number]) => {
@@ -69,7 +70,7 @@ export const Grid = ({ size, bombCount }: Props) => {
       [x - 1, y - 1],
       [x, y - 1],
       [x + 1, y - 1],
-    ]
+    ];
     return neighbours.filter((pos) => {
       return isValidCoordinate(pos);
     });
@@ -148,7 +149,10 @@ export const Grid = ({ size, bombCount }: Props) => {
   };
 
   return (
-    <div className="grid">
+    <div
+      className="grid"
+      style={{ gridTemplateColumns: `repeat(${sizeX}, 1fr)` }}
+    >
       {playground.map((cell) => {
         return (
           <Cell

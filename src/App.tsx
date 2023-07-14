@@ -1,16 +1,21 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import { Grid } from './Grid'
+import { GameSetting, GameSetup } from './GameSetup'
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [gameSettings, setGameSettings] = useState<GameSetting | null>(null)
+  
   return (
-    <div className='wrapper'>
-      <Grid size={10} bombCount={20}/>
+    <>
+    {!gameSettings ? <GameSetup setGameSettings={setGameSettings}/> : (
+      <div className='wrapper'>
+      <Grid sizeX={gameSettings.row} sizeY={gameSettings.column} bombCount={gameSettings.bomb}/>
     </div>
+    )}
+    
+    </>
+    
   )
 }
 

@@ -43,7 +43,7 @@ export const Grid = ({ size, bombCount }: Props) => {
   for (let i = 0; i < size; ++i) {
     for (let j = 0; j < size; j++) {
       const hasBomb = bombPos.includes(index);
-      playground.push({ position: [i, j], hasBomb });
+      playground.push({ position: [j, i], hasBomb });
       index++;
     }
   }
@@ -82,10 +82,11 @@ export const Grid = ({ size, bombCount }: Props) => {
       [x - 1, y],
       [x + 1, y],
       [x, y - 1],
-    ]
-    return neighbours.filter((pos) => {
-      return isValidCoordinate(pos)
+    ];
+    const validNeighbours = neighbours.filter((pos) => {
+      return isValidCoordinate(pos);
     });
+    return validNeighbours;
   };
 
   const getNeighBourBombs = (position: [number, number]) => {
@@ -112,7 +113,13 @@ export const Grid = ({ size, bombCount }: Props) => {
       let newNeighbours: Array<Position> = [];
       neighbours.forEach((n) => {
         checked.push(n);
-        if (getNeighBourBombs(n) === 0 && !getHasBombByPos(n)) {
+        const directNeighbours = getDirectNeighbours(n);
+        const propagationCondition =
+          directNeighbours.some((nei) => {
+            return getNeighBourBombs(nei) === 0 && !getHasBombByPos(nei);
+          }) && !getHasBombByPos(n);
+
+        if (propagationCondition) {
           newCleared.push(n);
           newNeighbours = [
             ...newNeighbours,

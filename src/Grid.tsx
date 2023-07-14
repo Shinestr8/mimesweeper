@@ -19,16 +19,14 @@ export const Grid = ({ size, bombCount }: Props) => {
   const bombPos = useMemo(() => {
     const arr: number[] = [];
     const { initialized, firstPos } = start;
-    console.log(firstPos);
     if (!initialized || !firstPos) return arr;
     for (let i = 0; i < bombCount; ++i) {
       let newBombPos = getRandomInt(0, size ** 2);
       while (
-        newBombPos === firstPos[0] + firstPos[1] ||
+        newBombPos === firstPos[0]*size + firstPos[1] ||
         arr.includes(newBombPos)
       ) {
         newBombPos = getRandomInt(0, size ** 2);
-        console.log(newBombPos);
       }
       arr.push(newBombPos);
     }

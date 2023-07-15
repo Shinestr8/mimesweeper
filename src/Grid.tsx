@@ -35,7 +35,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   }, [bombCount, start]);
 
   useEffect(() => {
-    start.firstPos && propagateClick(start.firstPos, false);
+    start.firstPos && propagateClick(start.firstPos);
   }, [bombPos]);
 
   const playground: Array<{ position: Position; hasBomb: boolean }> = [];
@@ -102,49 +102,42 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     return neighbourBombs;
   };
 
-  const propagateClick = (pos: [number, number], hasBomb: boolean) => {
-    let neighbours = getDirectNeighbours(pos);
+  const propagateClick = (pos: [number, number]) => {
+    let cellsToCheck = [pos]
     const newCleared: Array<Position> = [...cleared];
-    const checked = [pos];
-    if (!hasBomb) {
-      newCleared.push(pos);
-    }
+    const checked: Array<Position> = [];
+    let guard = 0
+    while(cellsToCheck.length !== 0 || guard > sizeX * sizeY){
+      const newCellsToCheck: Array<Position> = []
+      cellsToCheck.forEach((cell) => {
 
-    while (neighbours.length !== 0) {
-      let newNeighbours: Array<Position> = [];
-      neighbours.forEach((n) => {
-        checked.push(n);
-        const directNeighbours = getDirectNeighbours(n);
-        const propagationCondition =
-          directNeighbours.some((nei) => {
-            return getNeighBourBombs(nei) === 0 && !getHasBombByPos(nei);
-          }) && !getHasBombByPos(n);
-
-        if (propagationCondition) {
-          newCleared.push(n);
-          newNeighbours = [
-            ...newNeighbours,
-            ...getDirectNeighbours(n).filter(
-              (c) =>
-                !hasArray(newNeighbours, c) &&
-                !hasArray(checked, c) &&
-                !hasArray(neighbours, c)
-            ),
-          ];
+        newCleared.push(cell)
+        const cellNumber = getNeighBourBombs(cell)
+        if(cellNumber !== 0){
+          cellsToCheck = []
+          return;
         }
-      });
+        const cellNeighbours = getNeighbourCells(cell)
+        cellNeighbours.forEach((neighbour) => {
+          newCleared.push(neighbour)
+          !hasArray(newCellsToCheck, neighbour) && !hasArray(checked, neighbour) && newCellsToCheck.push(neighbour)
+        })
 
-      neighbours = [...newNeighbours];
+        checked.push(cell)
+      })
+      cellsToCheck = newCellsToCheck
+      guard++
     }
+    
 
     setCleared(newCleared);
-  };
+  }
 
   const handleCellClick = (pos: [number, number], hasBomb: boolean) => {
     if (!start.initialized) {
       setStart({ initialized: true, firstPos: pos });
     } else {
-      propagateClick(pos, hasBomb);
+      !hasBomb && propagateClick(pos);
     }
   };
 

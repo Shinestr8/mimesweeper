@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Cell } from "./Cell";
-import { arraysEqual, getRandomInt, hasArray } from "./utils/numberUtils";
+import { Cell } from "./Cell/Cell";
+import { arraysEqual, getRandomInt, hasArray } from "../../utils/numberUtils";
 
 type Props = {
   sizeX: number;
@@ -16,6 +16,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     initialized: boolean;
     firstPos: Position | null;
   }>({ initialized: false, firstPos: null });
+  const [loss, setLoss] = useState(false);
 
   const bombPos = useMemo(() => {
     const arr: number[] = [];
@@ -134,6 +135,9 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   }
 
   const handleCellClick = (pos: [number, number], hasBomb: boolean) => {
+    if(hasBomb) {
+      setLoss(true)
+    }
     if (!start.initialized) {
       setStart({ initialized: true, firstPos: pos });
     } else {
@@ -153,7 +157,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
             hasBomb={cell.hasBomb}
             number={getNeighBourBombs(cell.position)}
             handleCellClickCallback={handleCellClick}
-            isCleared={hasArray(cleared, cell.position)}
+            isCleared={loss || hasArray(cleared, cell.position)}
           />
         );
       })}

@@ -1,0 +1,16 @@
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+
+    input {
+        width: fit-content;
+    }
+
+    label {
+        text-transform: uppercase;
+        color: $grey;
+        font-weight: 700;
+        font-size: 11px;
+        font-family: 'Quicksand', sans-serif;
+    }
+}

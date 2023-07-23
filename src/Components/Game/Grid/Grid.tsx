@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Cell } from "./Cell/Cell";
-import { arraysEqual, getRandomInt, hasArray } from "../../utils/numberUtils";
+import { Cell } from "../Cell/Cell";
+import { arraysEqual, getRandomInt, hasArray } from "../../../utils/numberUtils";
+
+import styles from './styles.module.scss'
 
 type Props = {
   sizeX: number;
@@ -181,8 +183,10 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   }
 
   return (
+    <div className={styles.wrapper}>
+    <div className={styles.bombCount}>Bombs: {bombCount - flags.length}</div>
     <div
-      className="grid"
+      className={styles.grid}
       style={{ gridTemplateColumns: `repeat(${sizeX}, 1fr)` }}
     >
       {playground.map((cell) => {
@@ -198,6 +202,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
           />
         );
       })}
+    </div>
     </div>
   );
 };

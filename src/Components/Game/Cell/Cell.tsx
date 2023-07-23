@@ -42,7 +42,7 @@ export const Cell = ({
       onContextMenu={handleRightClick}
     >
       {hasFlag ? (
-        <div>F</div>
+        <div className={styles.flag}>F</div>
       ) : (
         <div className={cellClassName}>
           {isCleared ? (hasBomb ? "x" : number) : ""}

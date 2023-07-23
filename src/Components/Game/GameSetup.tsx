@@ -18,7 +18,7 @@ type Props = {
 
 export const GameSetup = ({setGameSettings}: Props) => {
 
-    const [selected, setSelected] = useState(2)
+    const [selected, setSelected] = useState(0)
     const [customPreset, setCustomPreset] = useState<GameSetting | null>(null)
     const presets = [
         {name: "Easy", row: 8, column: 8, bomb: 10},

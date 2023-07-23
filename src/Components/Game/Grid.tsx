@@ -16,8 +16,8 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     initialized: boolean;
     firstPos: Position | null;
   }>({ initialized: false, firstPos: null });
-  const [loss, setLoss] = useState(false);
-
+  const [status, setStatus] = useState<'play' |  'win' |'lose'>('play')
+  const [flags, setFlags] = useState<Array<Position>>([]);
   const bombPos = useMemo(() => {
     const arr: number[] = [];
     const { initialized, firstPos } = start;
@@ -134,9 +134,23 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     setCleared(newCleared);
   }
 
-  const handleCellClick = (pos: [number, number], hasBomb: boolean) => {
+  const checkWin = () => {
+    const dings = playground.some((cell) => {
+      if(!cell.hasBomb && !hasArray(cleared, cell.position)) {
+        return true
+      }
+    })
+    !dings && setStatus('win')
+  }
+
+  useEffect(() => {
+    checkWin()
+  }, [cleared])
+
+  const handleCellClick = (pos: [number, number], hasBomb: boolean, hasFlag: boolean) => {
+    if(hasFlag) return
     if(hasBomb) {
-      setLoss(true)
+      setStatus('lose')
     }
     if (!start.initialized) {
       setStart({ initialized: true, firstPos: pos });
@@ -144,6 +158,27 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
       !hasBomb && propagateClick(pos);
     }
   };
+
+  const handleRightClick = (pos: Position, hasFlag: boolean, isCleared: boolean) => {
+    if(isCleared) return
+    const newFlags = [...flags]
+    if(!hasFlag){
+      newFlags.push(pos)
+    } else {
+      let positionInFlags
+      newFlags.forEach((flag, index) => {
+        if(arraysEqual(flag, pos)){
+          positionInFlags = index
+        }
+      })
+      positionInFlags !== undefined && newFlags.splice(positionInFlags, 1)
+    }
+    setFlags(newFlags)
+  }
+
+  if(status === 'win') {
+    return (<div style={{margin: "auto"}}>WINNER</div>)
+  }
 
   return (
     <div
@@ -157,7 +192,9 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
             hasBomb={cell.hasBomb}
             number={getNeighBourBombs(cell.position)}
             handleCellClickCallback={handleCellClick}
-            isCleared={loss || hasArray(cleared, cell.position)}
+            handleRightClickCallback={handleRightClick}
+            isCleared={status === 'lose' || hasArray(cleared, cell.position)}
+            hasFlag={hasArray(flags, cell.position)}
           />
         );
       })}

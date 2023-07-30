@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Cell } from "../Cell/Cell";
-import { arraysEqual, getRandomInt, hasArray } from "../../../utils/numberUtils";
+import {
+  arraysEqual,
+  getRandomInt,
+  hasArray,
+} from "../../../utils/numberUtils";
 
-import styles from './styles.module.scss'
+import styles from "./styles.module.scss";
+import { Timer } from "../Timer/Timer";
+import { Win } from "../../Win/Win";
 
 type Props = {
   sizeX: number;
@@ -18,8 +24,9 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     initialized: boolean;
     firstPos: Position | null;
   }>({ initialized: false, firstPos: null });
-  const [status, setStatus] = useState<'play' |  'win' |'lose'>('play')
+  const [status, setStatus] = useState<"play" | "win" | "lose">("play");
   const [flags, setFlags] = useState<Array<Position>>([]);
+  const [time, setTime] = useState(0)
   const bombPos = useMemo(() => {
     const arr: number[] = [];
     const { initialized, firstPos } = start;
@@ -79,20 +86,6 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     });
   };
 
-  const getDirectNeighbours = (position: [number, number]) => {
-    const [x, y] = position;
-    const neighbours: Array<[number, number]> = [
-      [x, y + 1],
-      [x - 1, y],
-      [x + 1, y],
-      [x, y - 1],
-    ];
-    const validNeighbours = neighbours.filter((pos) => {
-      return isValidCoordinate(pos);
-    });
-    return validNeighbours;
-  };
-
   const getNeighBourBombs = (position: [number, number]) => {
     const neighbours = getNeighbourCells(position);
     let neighbourBombs = 0;
@@ -106,53 +99,57 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   };
 
   const propagateClick = (pos: [number, number]) => {
-    let cellsToCheck = [pos]
+    let cellsToCheck = [pos];
     const newCleared: Array<Position> = [...cleared];
     const checked: Array<Position> = [];
-    let guard = 0
-    while(cellsToCheck.length !== 0 || guard > sizeX * sizeY){
-      const newCellsToCheck: Array<Position> = []
+    let guard = 0;
+    while (cellsToCheck.length !== 0 || guard > sizeX * sizeY) {
+      const newCellsToCheck: Array<Position> = [];
       cellsToCheck.forEach((cell) => {
-
-        newCleared.push(cell)
-        const cellNumber = getNeighBourBombs(cell)
-        if(cellNumber !== 0){
-          cellsToCheck = []
+        newCleared.push(cell);
+        const cellNumber = getNeighBourBombs(cell);
+        if (cellNumber !== 0) {
+          cellsToCheck = [];
           return;
         }
-        const cellNeighbours = getNeighbourCells(cell)
+        const cellNeighbours = getNeighbourCells(cell);
         cellNeighbours.forEach((neighbour) => {
-          newCleared.push(neighbour)
-          !hasArray(newCellsToCheck, neighbour) && !hasArray(checked, neighbour) && newCellsToCheck.push(neighbour)
-        })
+          newCleared.push(neighbour);
+          !hasArray(newCellsToCheck, neighbour) &&
+            !hasArray(checked, neighbour) &&
+            newCellsToCheck.push(neighbour);
+        });
 
-        checked.push(cell)
-      })
-      cellsToCheck = newCellsToCheck
-      guard++
+        checked.push(cell);
+      });
+      cellsToCheck = newCellsToCheck;
+      guard++;
     }
-    
 
     setCleared(newCleared);
-  }
+  };
 
   const checkWin = () => {
     const dings = playground.some((cell) => {
-      if(!cell.hasBomb && !hasArray(cleared, cell.position)) {
-        return true
+      if (!cell.hasBomb && !hasArray(cleared, cell.position)) {
+        return true;
       }
-    })
-    !dings && setStatus('win')
-  }
+    });
+    !dings && setStatus("win");
+  };
 
   useEffect(() => {
-    checkWin()
-  }, [cleared])
+    checkWin();
+  }, [cleared]);
 
-  const handleCellClick = (pos: [number, number], hasBomb: boolean, hasFlag: boolean) => {
-    if(hasFlag) return
-    if(hasBomb) {
-      setStatus('lose')
+  const handleCellClick = (
+    pos: [number, number],
+    hasBomb: boolean,
+    hasFlag: boolean
+  ) => {
+    if (hasFlag) return;
+    if (hasBomb) {
+      setStatus("lose");
     }
     if (!start.initialized) {
       setStart({ initialized: true, firstPos: pos });
@@ -161,48 +158,61 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     }
   };
 
-  const handleRightClick = (pos: Position, hasFlag: boolean, isCleared: boolean) => {
-    if(isCleared) return
-    const newFlags = [...flags]
-    if(!hasFlag){
-      newFlags.push(pos)
+  const handleRightClick = (
+    pos: Position,
+    hasFlag: boolean,
+    isCleared: boolean
+  ) => {
+    if (isCleared) return;
+    const newFlags = [...flags];
+    if (!hasFlag) {
+      newFlags.push(pos);
     } else {
-      let positionInFlags
+      let positionInFlags;
       newFlags.forEach((flag, index) => {
-        if(arraysEqual(flag, pos)){
-          positionInFlags = index
+        if (arraysEqual(flag, pos)) {
+          positionInFlags = index;
         }
-      })
-      positionInFlags !== undefined && newFlags.splice(positionInFlags, 1)
+      });
+      positionInFlags !== undefined && newFlags.splice(positionInFlags, 1);
     }
-    setFlags(newFlags)
+    setFlags(newFlags);
+  };
+
+  const handleReplay = () => {
+    setStart({ initialized: false, firstPos: null })
+    setStatus('play')
+    setCleared([])
   }
 
-  if(status === 'win') {
-    return (<div style={{margin: "auto"}}>WINNER</div>)
+  if (status === "win") {
+    return <Win handleReplay={handleReplay} time={time} />
   }
 
   return (
     <div className={styles.wrapper}>
-    <div className={styles.bombCount}>Bombs: {bombCount - flags.length}</div>
-    <div
-      className={styles.grid}
-      style={{ gridTemplateColumns: `repeat(${sizeX}, 1fr)` }}
-    >
-      {playground.map((cell) => {
-        return (
-          <Cell
-            position={cell.position}
-            hasBomb={cell.hasBomb}
-            number={getNeighBourBombs(cell.position)}
-            handleCellClickCallback={handleCellClick}
-            handleRightClickCallback={handleRightClick}
-            isCleared={status === 'lose' || hasArray(cleared, cell.position)}
-            hasFlag={hasArray(flags, cell.position)}
-          />
-        );
-      })}
-    </div>
+      <div className={styles.gameInfo}>
+        <div>Bombs: {bombCount - flags.length}</div>
+        <Timer timeCallback={setTime} />
+      </div>
+      <div
+        className={styles.grid}
+        style={{ gridTemplateColumns: `repeat(${sizeX}, 1fr)` }}
+      >
+        {playground.map((cell) => {
+          return (
+            <Cell
+              position={cell.position}
+              hasBomb={cell.hasBomb}
+              number={getNeighBourBombs(cell.position)}
+              handleCellClickCallback={handleCellClick}
+              handleRightClickCallback={handleRightClick}
+              isCleared={status === "lose" || hasArray(cleared, cell.position)}
+              hasFlag={hasArray(flags, cell.position)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };

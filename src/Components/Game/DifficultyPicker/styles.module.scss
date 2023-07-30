@@ -1,0 +1,15 @@
+.difficultyPicker {
+    background-color: white;
+    padding: 10px 8px;
+    border: 1px solid $cPastelBlue;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &_active{
+        transition: background-color ease-in .3s;    
+        background-color: rgba($cPastelBlue, .7);
+        opacity: 0.8;
+    }
+  }
+  
+  

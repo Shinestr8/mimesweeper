@@ -9,6 +9,7 @@ import {
 import styles from "./styles.module.scss";
 import { Timer } from "../Timer/Timer";
 import { Win } from "../../Win/Win";
+import { Button } from "../../Button/Button";
 
 type Props = {
   sizeX: number;
@@ -26,7 +27,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   }>({ initialized: false, firstPos: null });
   const [status, setStatus] = useState<"play" | "win" | "lose">("play");
   const [flags, setFlags] = useState<Array<Position>>([]);
-  const [time, setTime] = useState(0)
+  const [time, setTime] = useState(0);
   const bombPos = useMemo(() => {
     const arr: number[] = [];
     const { initialized, firstPos } = start;
@@ -99,6 +100,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   };
 
   const propagateClick = (pos: [number, number]) => {
+    if(status === 'lose') return
     let cellsToCheck = [pos];
     const newCleared: Array<Position> = [...cleared];
     const checked: Array<Position> = [];
@@ -130,12 +132,13 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   };
 
   const checkWin = () => {
-    const dings = playground.some((cell) => {
+    if(status === "lose") return
+    const remainingCell = playground.some((cell) => {
       if (!cell.hasBomb && !hasArray(cleared, cell.position)) {
         return true;
       }
     });
-    !dings && setStatus("win");
+    !remainingCell && setStatus("win");
   };
 
   useEffect(() => {
@@ -180,20 +183,29 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   };
 
   const handleReplay = () => {
-    setStart({ initialized: false, firstPos: null })
-    setStatus('play')
-    setCleared([])
-  }
+    setStart({ initialized: false, firstPos: null });
+    setStatus("play");
+    setCleared([]);
+    setFlags([]);
+    setTime(0)
+  };
 
   if (status === "win") {
-    return <Win handleReplay={handleReplay} time={time} />
+    return <Win handleReplay={handleReplay} time={time} />;
   }
 
   return (
     <div className={styles.wrapper}>
+     
       <div className={styles.gameInfo}>
         <div>Bombs: {bombCount - flags.length}</div>
-        <Timer timeCallback={setTime} />
+        {status === "lose" && (
+        <>
+          <Button label="Retry" onClick={handleReplay} />
+        </>
+      )}
+        <Timer className={styles.gameInfo_timer} timeCallback={setTime} time={time} stopTimer={status==='lose'} />
+
       </div>
       <div
         className={styles.grid}

@@ -2,6 +2,15 @@
     height: 50px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    
+    div {
+        width: 33%;
+    }
+
+    &_timer {
+        text-align: end;
+    }
 }
 
 .wrapper {
@@ -9,11 +18,12 @@
     flex-direction: column;
     position: absolute;
     left: 50%;
-    top: calc(50% - 50px);
+    top: calc(50% - 40px);
     transform: translate(-50%, -50%);    
 }
 
 .grid {
+    margin-top: 4px;
     display: grid;
     width: fit-content;
   }

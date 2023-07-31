@@ -2,27 +2,25 @@ import { useEffect, useState } from "react";
 import { formatSeconds } from "../../../utils/formatSeconds";
 
 type Props = {
-    timeCallback: (time: number) => void
+    timeCallback: (v: any) => any
+    className?: string
+    stopTimer: boolean
+    time: number
 }
 
-export const Timer = ({timeCallback}: Props) => {
-
-    const [time, setTime] = useState<number>(0)
-
+export const Timer = ({timeCallback, className, stopTimer, time}: Props) => {
     useEffect(() => {
         const interval = setInterval(() => increment(), 1000);
-    
+        if(stopTimer) clearInterval(interval)
         return () => clearInterval(interval);
-      }, []);
+      }, [stopTimer]);
 
     const increment = () => {
-        setTime((t) => {
-            timeCallback(t+1)
-            return t+1
-        })
+        if(stopTimer) return
+        timeCallback((t: number) => t+1)
       };
     
     
 
-    return <div>{formatSeconds(time)}</div>
+    return <div className={className}>{formatSeconds(time)}</div>
 }

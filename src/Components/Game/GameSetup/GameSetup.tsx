@@ -33,7 +33,7 @@ export const GameSetup = ({setGameSettings}: Props) => {
         <div className={styles.wrapper}>
             <div>
             {presets.map(({name}, index) => {
-               return  <DifficultyPicker label={name} isActive={selected === index} onClick={() => setSelected(index)} />
+               return  <DifficultyPicker key={`difficulty-${index}-${name}`}label={name} isActive={selected === index} onClick={() => setSelected(index)} />
             })}
             </div>
             <Spacer margin={8} />

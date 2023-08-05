@@ -10,6 +10,7 @@ import styles from "./styles.module.scss";
 import { Timer } from "../Timer/Timer";
 import { Win } from "../../Win/Win";
 import { Button } from "../../Button/Button";
+import { getNeighbourCells, numberToCoord } from "../../../utils/gridUtils";
 
 type Props = {
   sizeX: number;
@@ -36,6 +37,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
       let newBombPos = getRandomInt(0, sizeX * sizeY);
       while (
         newBombPos === firstPos[1] * sizeX + firstPos[0] ||
+        hasArray(getNeighbourCells(firstPos, sizeX, sizeY), numberToCoord(newBombPos, sizeX)) ||
         arr.includes(newBombPos)
       ) {
         newBombPos = getRandomInt(0, sizeX * sizeY);
@@ -65,30 +67,8 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     return cell?.hasBomb;
   };
 
-  const isValidCoordinate = (position: [number, number]) => {
-    const [x, y] = position;
-    return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
-  };
-
-  const getNeighbourCells = (position: [number, number]) => {
-    const [x, y] = position;
-    const neighbours: Array<[number, number]> = [
-      [x - 1, y + 1],
-      [x, y + 1],
-      [x + 1, y + 1],
-      [x - 1, y],
-      [x + 1, y],
-      [x - 1, y - 1],
-      [x, y - 1],
-      [x + 1, y - 1],
-    ];
-    return neighbours.filter((pos) => {
-      return isValidCoordinate(pos);
-    });
-  };
-
   const getNeighBourBombs = (position: [number, number]) => {
-    const neighbours = getNeighbourCells(position);
+    const neighbours = getNeighbourCells(position, sizeX, sizeY);
     let neighbourBombs = 0;
 
     neighbours.forEach((n) => {
@@ -114,7 +94,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
           cellsToCheck = [];
           return;
         }
-        const cellNeighbours = getNeighbourCells(cell);
+        const cellNeighbours = getNeighbourCells(cell, sizeX, sizeY);
         cellNeighbours.forEach((neighbour) => {
           newCleared.push(neighbour);
           !hasArray(newCellsToCheck, neighbour) &&

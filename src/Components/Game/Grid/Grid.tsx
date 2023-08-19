@@ -37,7 +37,10 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
       let newBombPos = getRandomInt(0, sizeX * sizeY);
       while (
         newBombPos === firstPos[1] * sizeX + firstPos[0] ||
-        hasArray(getNeighbourCells(firstPos, sizeX, sizeY), numberToCoord(newBombPos, sizeX)) ||
+        hasArray(
+          getNeighbourCells(firstPos, sizeX, sizeY),
+          numberToCoord(newBombPos, sizeX)
+        ) ||
         arr.includes(newBombPos)
       ) {
         newBombPos = getRandomInt(0, sizeX * sizeY);
@@ -80,12 +83,13 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
   };
 
   const propagateClick = (pos: [number, number]) => {
-    if(status === 'lose') return
+    if (status === "lose") return;
     let cellsToCheck = [pos];
     const newCleared: Array<Position> = [...cleared];
+    let newFlags: Array<Position> = [...flags]
     const checked: Array<Position> = [];
     let guard = 0;
-    while (cellsToCheck.length !== 0 || guard > sizeX * sizeY) {
+    while (cellsToCheck.length !== 0 && guard < sizeX * sizeY) {
       const newCellsToCheck: Array<Position> = [];
       cellsToCheck.forEach((cell) => {
         newCleared.push(cell);
@@ -97,6 +101,9 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
         const cellNeighbours = getNeighbourCells(cell, sizeX, sizeY);
         cellNeighbours.forEach((neighbour) => {
           newCleared.push(neighbour);
+          if (hasArray(flags, neighbour)) {
+            newFlags = newFlags.filter((f) => !arraysEqual(f, neighbour))
+          }
           !hasArray(newCellsToCheck, neighbour) &&
             !hasArray(checked, neighbour) &&
             newCellsToCheck.push(neighbour);
@@ -109,10 +116,11 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     }
 
     setCleared(newCleared);
+    setFlags(newFlags)
   };
 
   const checkWin = () => {
-    if(status === "lose") return
+    if (status === "lose") return;
     const remainingCell = playground.some((cell) => {
       if (!cell.hasBomb && !hasArray(cleared, cell.position)) {
         return true;
@@ -167,7 +175,7 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
     setStatus("play");
     setCleared([]);
     setFlags([]);
-    setTime(0)
+    setTime(0);
   };
 
   if (status === "win") {
@@ -176,16 +184,19 @@ export const Grid = ({ sizeX, sizeY, bombCount }: Props) => {
 
   return (
     <div className={styles.wrapper}>
-     
       <div className={styles.gameInfo}>
         <div>Bombs: {bombCount - flags.length}</div>
         {status === "lose" && (
-        <>
-          <Button label="Retry" onClick={handleReplay} />
-        </>
-      )}
-        <Timer className={styles.gameInfo_timer} timeCallback={setTime} time={time} stopTimer={status==='lose'} />
-
+          <>
+            <Button label="Retry" onClick={handleReplay} />
+          </>
+        )}
+        <Timer
+          className={styles.gameInfo_timer}
+          timeCallback={setTime}
+          time={time}
+          stopTimer={status === "lose"}
+        />
       </div>
       <div
         className={styles.grid}
